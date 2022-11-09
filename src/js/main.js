@@ -160,7 +160,7 @@ for (row in rows) {
     
         rows[row].addChild(symbol)
         console.log(symbol.position.y)
-        rows[row].mask = mask;
+        // rows[row].mask = mask;
     }
 }
 
@@ -189,6 +189,7 @@ let move_mode = false;
 let speed_change = true;
 let tick = PIXI.Ticker.shared;
 let delta_num = 0;
+let step = backdrop.width/(90*3.2); //Step is 1/180th of the height of an individual symbol
 tick.add((delta) => {
     console.log(delta_num)
     if (move_mode) {
@@ -196,11 +197,11 @@ tick.add((delta) => {
             delta_num = delta_num + 2;
             delta_rad = delta_num * (Math.PI/180)
             // console.log(Math.(delta_num))
-            tick.speed = (1.5 - 1.5*Math.cos(delta_rad*2));
-            console.log(tick.speed)
+            tick.speed = (4 - 4*Math.cos(delta_rad*2));
         }
         for (slot_element in l_row.children) {
-            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*5.5;
+            console.log(step)
+            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - Math.ceil(delta)*step*2;
             if (l_row.children[slot_element].position.y < -l_row.children[slot_element].height) {
                 l_row.removeChild(l_row.children[slot_element]);
                 new_symbol = generateSymbol();
@@ -210,7 +211,7 @@ tick.add((delta) => {
             } 
         }
         for (slot_element in m_row.children) {
-            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*5.5;
+            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + Math.ceil(delta)*step*2;
             if (m_row.children[slot_element].position.y > m_row.children[slot_element].height*(symbols.length)) {
                 m_row.removeChild(m_row.children[slot_element]);
                 new_symbol = generateSymbol();
@@ -220,7 +221,7 @@ tick.add((delta) => {
             }
         }
         for (slot_element in r_row.children) {
-            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*5.5;
+            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - Math.ceil(delta)*step*2;
             if (r_row.children[slot_element].position.y < - r_row.children[slot_element].height) {
                 r_row.removeChild(r_row.children[slot_element]);
                 new_symbol = generateSymbol();
