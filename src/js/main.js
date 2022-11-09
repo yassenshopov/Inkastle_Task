@@ -143,12 +143,10 @@ for (row in rows) {
         textureArray.push(texture1, texture2);
         symbol = new PIXI.AnimatedSprite(textureArray);
         symbol.anchor.set(0.5);
-        // symbol.height = 1;
         symbol.width = backdrop.width/3.2;
         symbol.height = symbol.width;
-        symbol.position.y = i*150;
+        symbol.position.y = i*symbol.height;
         symbol.position.x = (win_width/2) + symbol.width*(row - 1);
-        // symbol.play();
         symbol.animationSpeed = 0.05;
         symbol.zIndex = 2
     
@@ -195,17 +193,17 @@ tick.add((delta) => {
         }
         for (slot_element in l_row.children) {
             l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*5.5;
-            if (l_row.children[slot_element].position.y < -150) {
+            if (l_row.children[slot_element].position.y < -l_row.children[slot_element].height) {
                 l_row.removeChild(l_row.children[slot_element]);
                 new_symbol = generateSymbol();
-                new_symbol.position.y = 1950;
-                new_symbol.position.x = (win_width/2) - 150;
+                new_symbol.position.y = new_symbol.height * symbols.length;
+                new_symbol.position.x = (win_width/2) - new_symbol.width;
                 l_row.addChild(new_symbol)
             }
         }
         for (slot_element in m_row.children) {
             m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*5.5;
-            if (m_row.children[slot_element].position.y > 2100) {
+            if (m_row.children[slot_element].position.y > m_row.children[slot_element].height*(symbols.length)) {
                 m_row.removeChild(m_row.children[slot_element]);
                 new_symbol = generateSymbol();
                 new_symbol.position.y = 0;
@@ -215,11 +213,11 @@ tick.add((delta) => {
         }
         for (slot_element in r_row.children) {
             r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*5.5;
-            if (r_row.children[slot_element].position.y < -150) {
+            if (r_row.children[slot_element].position.y < - r_row.children[slot_element].height) {
                 r_row.removeChild(r_row.children[slot_element]);
                 new_symbol = generateSymbol();
-                new_symbol.position.y = 1950;
-                new_symbol.position.x = (win_width/2) + 150;
+                new_symbol.position.y = new_symbol.height * symbols.length;
+                new_symbol.position.x = (win_width/2) + new_symbol.width;
                 r_row.addChild(new_symbol)        
             }
         }
