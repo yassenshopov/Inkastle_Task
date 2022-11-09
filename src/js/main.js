@@ -21,6 +21,8 @@ let bb_width;
 let frame_width;
 let frame_height;
 let frame_y;
+let crow_x;
+let crow_y;
 if (mobile_mode) {
     bg_width = win_height;
     tb_width = screen_width;
@@ -28,6 +30,8 @@ if (mobile_mode) {
     frame_width = win_width*1.1;
     frame_height = frame_width*1.2;
     frame_y = win_height/10;
+    crow_x = win_width/6;
+    crow_y = win_height/10;
 } else {
     bg_width = win_width;
     tb_width = bg_width;
@@ -35,6 +39,8 @@ if (mobile_mode) {
     frame_width = win_width*0.40;
     frame_height = frame_width*1.05;
     frame_y = win_height/10;
+    crow_x = win_width/5;
+    crow_y = win_height/2;
 }
 bg.width = bg_width;
 bg.height = bg.width;
@@ -50,10 +56,6 @@ top_bar.zIndex = 3;
 top_bar.anchor.set(0.5)
 top_bar.position.x = win_width/2;
 top_bar.position.y = top_bar.height/2;
-
-let crow = PIXI.Sprite.from("src/images/ui/crow.png");
-crow.anchor.set(0.5);
-crow.position.set(100, (win_height/2) - 50);
 
 let bottom_bar = PIXI.Sprite.from("src/images/ui/bottom_bar.png");
 bottom_bar.width = bb_width;
@@ -85,6 +87,12 @@ backdrop.width = frame.width/1.3;
 backdrop.height = frame.height/1.5;
 backdrop.position.set(win_width/2, frame.position.y);
 backdrop.zIndex = 0;
+
+let crow = PIXI.Sprite.from("src/images/ui/crow.png");
+crow.anchor.set(0.5);
+crow.width = backdrop.width/5;
+crow.height = crow.width*1.8;
+crow.position.set(crow_x, crow_y);
 
 const mask = new PIXI.Graphics()
     .beginFill(0x000000)
@@ -199,7 +207,7 @@ tick.add((delta) => {
                 new_symbol.position.y = new_symbol.height * symbols.length;
                 new_symbol.position.x = (win_width/2) - new_symbol.width;
                 l_row.addChild(new_symbol)
-            }
+            } 
         }
         for (slot_element in m_row.children) {
             m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*5.5;
@@ -229,7 +237,6 @@ function play() {
     speed_change = true;
     if (play_mode == true) {
         play_mode = false;
-        // tick.stop();
     } else {
         play_mode = true;
         move_mode = true;
@@ -238,18 +245,16 @@ function play() {
             speed_change = false;
             tick.speed = 1;
             for (symbol in l_row.children) {
+                
                 if (l_row.children[symbol].position.y > ((frame.position.y) - 50) && l_row.children[symbol].position.y < ((frame.position.y) + 50)) {
-                    console.log("Win!",l_row.children[symbol])
                     l_row.children[symbol].play()
                     l_row.children[symbol].animationSpeed = 0.05;
                 }
                 if (m_row.children[symbol].position.y > ((frame.position.y) - 50) && m_row.children[symbol].position.y < ((frame.position.y) + 50)) {
-                    console.log("Win!",l_row.children[symbol])
                     m_row.children[symbol].play()
                     m_row.children[symbol].animationSpeed = 0.05;
                 }
                 if (r_row.children[symbol].position.y > ((frame.position.y) - 50) && r_row.children[symbol].position.y < ((frame.position.y) + 50)) {
-                    console.log("Win!",l_row.children[symbol])
                     r_row.children[symbol].play()
                     r_row.children[symbol].animationSpeed = 0.05;
                 }
