@@ -1,19 +1,39 @@
 let win_width = window.innerWidth;
 let win_height = window.innerHeight;
 
+let screen_width = screen.width;
+let bg_width;
+let mobile_mode = false;
+if (screen_width < 800) {
+    bg_width = 1;
+    mobile_mode = true;
+} else {
+    
+}
+
 let app = new PIXI.Application({width: win_width, height: win_height, backgroundColor: 0xdedede, sharedTicker: true});
 document.getElementById("root").appendChild(app.view);
 
 
 let bg = PIXI.Sprite.from("src/images/bg.png");
-bg.width = win_width;
-bg.position.y = - win_height/2;
-// bg.height = win_height;
+// bg.width = win_width;
+
+if (mobile_mode) {
+}
+bg.anchor.set(0.5)
+bg.height = win_height*1.25;
+bg.width = bg.height;
+bg.position.x = win_width/2;
+bg.position.y = bg.height/2;
 app.stage.addChild(bg);
 
 let top_bar = PIXI.Sprite.from("src/images/ui/top_bar.png");
 top_bar.width = bg.width;
+top_bar.height = top_bar.width*0.01669595782;
 top_bar.zIndex = 3;
+top_bar.anchor.set(0.5)
+top_bar.position.x = win_width/2;
+top_bar.position.y = top_bar.height/2;
 
 let crow = PIXI.Sprite.from("src/images/ui/crow.png");
 crow.anchor.set(0.5);
@@ -21,7 +41,10 @@ crow.position.set(100, (win_height/2) - 50);
 
 let bottom_bar = PIXI.Sprite.from("src/images/ui/bottom_bar.png");
 bottom_bar.width = bg.width;
-bottom_bar.position.y = win_height - 26;
+bottom_bar.height = bottom_bar.width*0.01669595782;
+bottom_bar.anchor.set(0.5)
+bottom_bar.position.x = win_width/2;
+bottom_bar.position.y = win_height - (bottom_bar.height/2);
 
 const container = new PIXI.Container();
 app.stage.addChild(container);
@@ -132,7 +155,6 @@ function generateSymbol(row_num) {
     symbol = new PIXI.AnimatedSprite(textureArray);
     symbol.anchor.set(0.5);
     // symbol.play();
-    symbol.animationSpeed = 0.05;
     symbol.zIndex = 2
 
     return symbol;
@@ -142,54 +164,84 @@ app.stage.addChild(top_bar, logo, crow, bottom_bar)
 container.addChild(frame, backdrop, mask, l_row, m_row, r_row)
 
 let new_symbol;
-
+let move_mode = false;
 let tick = PIXI.Ticker.shared;
+let delta_num = 0;
 tick.add((delta) => {
-    for (slot_element in l_row.children) {
-        l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*5.5;
-        if (l_row.children[slot_element].position.y < -150) {
-            // l_row.children[slot_element].position.y = 1950;
-            l_row.removeChild(l_row.children[slot_element]);
-            new_symbol = generateSymbol();
-            new_symbol.position.y = 1950;
-            new_symbol.position.x = (win_width/2) - 150;
-            l_row.addChild(new_symbol)
+
+    if (move_mode) {
+        delta_num = delta_num + 2;
+        delta_rad = delta_num * (Math.PI/180)
+        // console.log(Math.(delta_num))
+        tick.speed = (1.5 + 1.5*Math.cos(delta_rad));
+        console.log(tick.speed)
+        for (slot_element in l_row.children) {
+            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*5.5;
+            if (l_row.children[slot_element].position.y < -150) {
+                // l_row.children[slot_element].position.y = 1950;
+                l_row.removeChild(l_row.children[slot_element]);
+                new_symbol = generateSymbol();
+                new_symbol.position.y = 1950;
+                new_symbol.position.x = (win_width/2) - 150;
+                l_row.addChild(new_symbol)
+            }
         }
-    }
-    for (slot_element in m_row.children) {
-        m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*5.5;
-        if (m_row.children[slot_element].position.y > 2100) {
-            m_row.removeChild(m_row.children[slot_element]);
-            new_symbol = generateSymbol();
-            new_symbol.position.y = 0;
-            new_symbol.position.x = (win_width/2);
-            m_row.addChild(new_symbol)
+        for (slot_element in m_row.children) {
+            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*5.5;
+            if (m_row.children[slot_element].position.y > 2100) {
+                m_row.removeChild(m_row.children[slot_element]);
+                new_symbol = generateSymbol();
+                new_symbol.position.y = 0;
+                new_symbol.position.x = (win_width/2);
+                m_row.addChild(new_symbol)
+            }
         }
-    }
-    for (slot_element in r_row.children) {
-        r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*5.5;
-        if (r_row.children[slot_element].position.y < -150) {
-            r_row.removeChild(r_row.children[slot_element]);
-            new_symbol = generateSymbol();
-            new_symbol.position.y = 1950;
-            new_symbol.position.x = (win_width/2) + 150;
-            r_row.addChild(new_symbol)        
+        for (slot_element in r_row.children) {
+            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*5.5;
+            if (r_row.children[slot_element].position.y < -150) {
+                r_row.removeChild(r_row.children[slot_element]);
+                new_symbol = generateSymbol();
+                new_symbol.position.y = 1950;
+                new_symbol.position.x = (win_width/2) + 150;
+                r_row.addChild(new_symbol)        
+            }
         }
     }
 });
-
-function autoPause() {
-    tick.stop();
-}
 
 let play_mode = false;
 function play() {
     if (play_mode == true) {
         play_mode = false;
-        app.ticker.stop();
+        tick.stop();
     } else {
         play_mode = true;
-        console.log(play_mode)
-        app.ticker.start();
+        move_mode = true;
+        tick.start();
+        setTimeout(() => {
+            for (symbol in l_row.children) {
+                if (l_row.children[symbol].position.y > ((win_height/2) - 50) && l_row.children[symbol].position.y < ((win_height/2) + 50)) {
+                    console.log("Win!",l_row.children[symbol])
+                    l_row.children[symbol].play()
+                    l_row.children[symbol].animationSpeed = 0.02;
+                }
+                if (m_row.children[symbol].position.y > ((win_height/2) - 50) && m_row.children[symbol].position.y < ((win_height/2) + 50)) {
+                    console.log("Win!",l_row.children[symbol])
+                    m_row.children[symbol].play()
+                    m_row.children[symbol].animationSpeed = 0.02;
+                }
+                if (r_row.children[symbol].position.y > ((win_height/2) - 50) && r_row.children[symbol].position.y < ((win_height/2) + 50)) {
+                    console.log("Win!",l_row.children[symbol])
+                    r_row.children[symbol].play()
+                    r_row.children[symbol].animationSpeed = 0.02;
+                }
+            }
+            move_mode = false;
+            // tick.update()
+            setTimeout(() => {
+                // tick.stop();
+                // tick.speed = 0.01
+            }, 200);
+        }, 1500)
     }
 }
