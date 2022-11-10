@@ -210,7 +210,7 @@ tick.add((delta) => {
             l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*step*8;
             if (l_row.children[slot_element].position.y < (sym_origin_lr)) {
                 l_row.removeChild(l_row.children[slot_element]);
-                new_symbol = generateSymbol(0);
+                new_symbol = generateSymbol();
                 new_symbol.position.y = sym_origin_m;
                 new_symbol.position.x = (win_width/2) - new_symbol.width;
                 l_row.addChild(new_symbol)
@@ -220,7 +220,7 @@ tick.add((delta) => {
             m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*step*8;
             if (m_row.children[slot_element].position.y > sym_origin_m) {
                 m_row.removeChild(m_row.children[slot_element]);
-                new_symbol = generateSymbol(1);
+                new_symbol = generateSymbol();
                 new_symbol.position.y = sym_origin_lr;
                 new_symbol.position.x = (win_width/2);
                 m_row.addChild(new_symbol)
@@ -230,7 +230,7 @@ tick.add((delta) => {
             r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*step*8;
             if (r_row.children[slot_element].position.y < sym_origin_lr) {
                 r_row.removeChild(r_row.children[slot_element]);
-                new_symbol = generateSymbol(0);
+                new_symbol = generateSymbol();
                 new_symbol.position.y = sym_origin_m;
                 new_symbol.position.x = (win_width/2) + new_symbol.width;
                 r_row.addChild(new_symbol)        
@@ -241,6 +241,12 @@ tick.add((delta) => {
 
 let play_mode = false;
 function play() {
+    // Mechanism to resotre alpha of all symbols
+    for (symbol in l_row.children) {
+        l_row.children[symbol].alpha = 1;
+        m_row.children[symbol].alpha = 1;
+        r_row.children[symbol].alpha = 1;
+    };
     speed_change = true;
     if (play_mode == true) {
         play_mode = false;
@@ -252,6 +258,7 @@ function play() {
             speed_change = false;
             tick.speed = 1;
             move_mode = false;
+            let index_min;
 
             // Mechanism to check whether tiles align
             for (symbol in l_row.children) {
@@ -266,7 +273,7 @@ function play() {
                 }
                 console.log(differences)
                 let min_value = Math.min(...differences)
-                let index_min = differences.indexOf(min_value)
+                index_min = differences.indexOf(min_value)
                 console.log(index_min)
                 m_row.children[symbol].position.y = default_positions[index_min]
                 r_row.children[symbol].position.y = default_positions[parseInt(symbol, 10)]
@@ -277,14 +284,23 @@ function play() {
                 if (l_row.children[symbol].position.y == default_positions[2]) {
                     l_row.children[symbol].play()
                     l_row.children[symbol].animationSpeed = 0.05;
+                } else {
+                    l_row.children[symbol].alpha = 0.5;
                 }
+                
                 if (m_row.children[symbol].position.y == default_positions[2]) {
                     m_row.children[symbol].play()
                     m_row.children[symbol].animationSpeed = 0.05;
+                } else {
+                    m_row.children[symbol].alpha = 0.5;
                 }
+
                 if (r_row.children[symbol].position.y == default_positions[2]) {
                     r_row.children[symbol].play()
                     r_row.children[symbol].animationSpeed = 0.05;
+                }
+                else {
+                    r_row.children[symbol].alpha = 0.5;
                 }
             }
         }, 1500)
