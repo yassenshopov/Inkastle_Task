@@ -32,6 +32,7 @@ if (mobile_mode) {
     frame_y = win_height/10;
     crow_x = win_width/6;
     crow_y = win_height/10;
+    symbols_offset = (((frame_width/1.3))/3.2)/2 //symbol_height/2
 } else {
     bg_width = win_width;
     tb_width = bg_width;
@@ -41,6 +42,7 @@ if (mobile_mode) {
     frame_y = win_height/10;
     crow_x = win_width/5;
     crow_y = win_height/2;
+    symbols_offset = (((frame_width/1.3))/3.2)/4 //symbol_height/4
 }
 bg.width = bg_width;
 bg.height = bg.width;
@@ -129,6 +131,9 @@ let path2;
 let texture1;
 let texture2;
 let symbol;
+let symbol_height = backdrop.width/3.2;
+let sym_origin_lr = (frame.position.y - frame_height/2) + symbols_offset;
+let sym_origin_m = (symbols.length)*symbol_height + (frame.position.y - frame_height/2) + symbols_offset;
 
 let rows = [l_row, m_row, r_row];
 
@@ -150,17 +155,16 @@ for (row in rows) {
         texture2 = PIXI.Texture.from(path2);
         textureArray.push(texture1, texture2);
         symbol = new PIXI.AnimatedSprite(textureArray);
-        symbol.anchor.set(0.5);
-        symbol.width = backdrop.width/3.2;
-        symbol.height = symbol.width;
-        symbol.position.y = i*symbol.height;
+        symbol.height = symbol_height;
+        symbol.width = symbol.height;
+        symbol.anchor.set(0.5)
+        symbol.position.y = (i)*symbol.height + (frame.position.y - frame_height/2) + symbols_offset;
         symbol.position.x = (win_width/2) + symbol.width*(row - 1);
-        symbol.animationSpeed = 0.05;
         symbol.zIndex = 2
     
         rows[row].addChild(symbol)
         console.log(symbol.position.y)
-        // rows[row].mask = mask;
+        rows[row].mask = mask;
     }
 }
 
@@ -174,10 +178,9 @@ function generateSymbol(row_num) {
     textureArray.push(texture1, texture2);
     symbol = new PIXI.AnimatedSprite(textureArray);
     symbol.anchor.set(0.5);
-    symbol.width = backdrop.width/3.2;
+    symbol.width = symbol_height;
     symbol.height = symbol.width;
-    symbol.zIndex = 2
-
+    symbol.zIndex = 2;
     return symbol;
 }
 
@@ -189,43 +192,42 @@ let move_mode = false;
 let speed_change = true;
 let tick = PIXI.Ticker.shared;
 let delta_num = 0;
-let step = backdrop.width/(90*3.2); //Step is 1/180th of the height of an individual symbol
+let step = symbol_height/(180); //Step is 1/180th of the height of an individual symbol
 tick.add((delta) => {
     console.log(delta_num)
     if (move_mode) {
         if (speed_change) {
             delta_num = delta_num + 2;
             delta_rad = delta_num * (Math.PI/180)
-            // console.log(Math.(delta_num))
             tick.speed = (4 - 4*Math.cos(delta_rad*2));
         }
         for (slot_element in l_row.children) {
             console.log(step)
-            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - Math.ceil(delta)*step*2;
-            if (l_row.children[slot_element].position.y < -l_row.children[slot_element].height) {
+            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - step*10;
+            if (l_row.children[slot_element].position.y < (sym_origin_lr)) {
                 l_row.removeChild(l_row.children[slot_element]);
-                new_symbol = generateSymbol();
-                new_symbol.position.y = new_symbol.height * symbols.length;
+                new_symbol = generateSymbol(0);
+                new_symbol.position.y = sym_origin_m;
                 new_symbol.position.x = (win_width/2) - new_symbol.width;
                 l_row.addChild(new_symbol)
             } 
         }
         for (slot_element in m_row.children) {
-            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + Math.ceil(delta)*step*2;
-            if (m_row.children[slot_element].position.y > m_row.children[slot_element].height*(symbols.length)) {
+            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + step*10;
+            if (m_row.children[slot_element].position.y > sym_origin_m) {
                 m_row.removeChild(m_row.children[slot_element]);
-                new_symbol = generateSymbol();
-                new_symbol.position.y = 0;
+                new_symbol = generateSymbol(1);
+                new_symbol.position.y = sym_origin_lr;
                 new_symbol.position.x = (win_width/2);
                 m_row.addChild(new_symbol)
             }
         }
         for (slot_element in r_row.children) {
-            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - Math.ceil(delta)*step*2;
-            if (r_row.children[slot_element].position.y < - r_row.children[slot_element].height) {
+            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - step*10;
+            if (r_row.children[slot_element].position.y < sym_origin_lr) {
                 r_row.removeChild(r_row.children[slot_element]);
-                new_symbol = generateSymbol();
-                new_symbol.position.y = new_symbol.height * symbols.length;
+                new_symbol = generateSymbol(0);
+                new_symbol.position.y = sym_origin_m;
                 new_symbol.position.x = (win_width/2) + new_symbol.width;
                 r_row.addChild(new_symbol)        
             }
