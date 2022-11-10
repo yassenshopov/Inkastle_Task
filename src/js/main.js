@@ -134,6 +134,7 @@ let symbol;
 let symbol_height = backdrop.width/3.2;
 let sym_origin_lr = (frame.position.y - frame_height/2) + symbols_offset;
 let sym_origin_m = (symbols.length)*symbol_height + (frame.position.y - frame_height/2) + symbols_offset;
+let default_positions = []
 
 let rows = [l_row, m_row, r_row];
 
@@ -143,7 +144,6 @@ for (row in rows) {
         randInt = Math.floor(Math.random() * symbols.length)
         if (!(symbols_duplicate.includes(symbols[randInt]))) {
             symbols_duplicate.push(symbols[randInt])
-            console.log(symbols_duplicate)
         };
     };
     // This loop creates a vertical line of all unique symbols in a random order
@@ -159,14 +159,18 @@ for (row in rows) {
         symbol.width = symbol.height;
         symbol.anchor.set(0.5)
         symbol.position.y = (i)*symbol.height + (frame.position.y - frame_height/2) + symbols_offset;
+        if (!(default_positions.includes(symbol.position.y))) {
+            default_positions.push(symbol.position.y)
+        }
         symbol.position.x = (win_width/2) + symbol.width*(row - 1);
         symbol.zIndex = 2
     
         rows[row].addChild(symbol)
-        console.log(symbol.position.y)
         rows[row].mask = mask;
     }
 }
+
+console.log(default_positions)
 
 function generateSymbol(row_num) {
     let randomInt = Math.floor(Math.random() * symbols.length);
@@ -194,16 +198,15 @@ let tick = PIXI.Ticker.shared;
 let delta_num = 0;
 let step = symbol_height/(180); //Step is 1/180th of the height of an individual symbol
 tick.add((delta) => {
-    console.log(delta_num)
     if (move_mode) {
-        if (speed_change) {
-            delta_num = delta_num + 2;
-            delta_rad = delta_num * (Math.PI/180)
-            tick.speed = (4 - 4*Math.cos(delta_rad*2));
-        }
+        // if (speed_change) {
+        //     delta_num = delta_num + 2;
+        //     delta_rad = delta_num * (Math.PI/180)
+        //     tick.speed = (4 - 4*Math.cos(delta_rad*2));
+        // }
         for (slot_element in l_row.children) {
-            console.log(step)
-            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - step*10;
+            // console.log(step)
+            l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - step*32;
             if (l_row.children[slot_element].position.y < (sym_origin_lr)) {
                 l_row.removeChild(l_row.children[slot_element]);
                 new_symbol = generateSymbol(0);
@@ -213,7 +216,7 @@ tick.add((delta) => {
             } 
         }
         for (slot_element in m_row.children) {
-            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + step*10;
+            m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + step*32;
             if (m_row.children[slot_element].position.y > sym_origin_m) {
                 m_row.removeChild(m_row.children[slot_element]);
                 new_symbol = generateSymbol(1);
@@ -223,7 +226,7 @@ tick.add((delta) => {
             }
         }
         for (slot_element in r_row.children) {
-            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - step*10;
+            r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - step*32;
             if (r_row.children[slot_element].position.y < sym_origin_lr) {
                 r_row.removeChild(r_row.children[slot_element]);
                 new_symbol = generateSymbol(0);
@@ -247,22 +250,42 @@ function play() {
         setTimeout(() => {
             speed_change = false;
             tick.speed = 1;
+            move_mode = false;
+
+            // Mechanism to check whether tiles align
             for (symbol in l_row.children) {
-                
-                if (l_row.children[symbol].position.y > ((frame.position.y) - 50) && l_row.children[symbol].position.y < ((frame.position.y) + 50)) {
+                l_row.children[symbol].position.y = default_positions[parseInt(symbol, 10)]
+                // Middle column requires special attention.
+                // The position_y of every symbol is compared with the values in default_positions
+                // The closest one is chosen
+                let differences = [];
+                for (position_y in default_positions) {
+                    console.log(position_y)
+                    differences.push(Math.abs(m_row.children[symbol].position.y - default_positions[position_y]))
+                }
+                console.log(differences)
+                let min_value = Math.min(...differences)
+                let index_min = differences.indexOf(min_value)
+                console.log(index_min)
+                m_row.children[symbol].position.y = default_positions[index_min]
+                r_row.children[symbol].position.y = default_positions[parseInt(symbol, 10)]
+            }
+
+            // Mechanism to check which symbols "win"
+            for (symbol in l_row.children) {
+                if (l_row.children[symbol].position.y == default_positions[2]) {
                     l_row.children[symbol].play()
                     l_row.children[symbol].animationSpeed = 0.05;
                 }
-                if (m_row.children[symbol].position.y > ((frame.position.y) - 50) && m_row.children[symbol].position.y < ((frame.position.y) + 50)) {
+                if (m_row.children[symbol].position.y == default_positions[2]) {
                     m_row.children[symbol].play()
                     m_row.children[symbol].animationSpeed = 0.05;
                 }
-                if (r_row.children[symbol].position.y > ((frame.position.y) - 50) && r_row.children[symbol].position.y < ((frame.position.y) + 50)) {
+                if (r_row.children[symbol].position.y == default_positions[2]) {
                     r_row.children[symbol].play()
                     r_row.children[symbol].animationSpeed = 0.05;
                 }
             }
-            move_mode = false;
         }, 1500)
     }
 }
