@@ -234,7 +234,7 @@ tick.add((delta) => {
     }
     for (slot_element in l_col.children) {
       l_col.children[slot_element].position.y =
-        l_col.children[slot_element].position.y - delta * step * 8;
+        l_col.children[slot_element].position.y - step * 24;
       if (l_col.children[slot_element].position.y < sym_origin_up) {
         l_col.removeChild(l_col.children[slot_element]);
         new_symbol = generateSymbol();
@@ -245,7 +245,7 @@ tick.add((delta) => {
     }
     for (slot_element in m_col.children) {
       m_col.children[slot_element].position.y =
-        m_col.children[slot_element].position.y + delta * step * 8;
+        m_col.children[slot_element].position.y + step * 24;
       if (m_col.children[slot_element].position.y > sym_origin_down) {
         m_col.removeChild(m_col.children[slot_element]);
         new_symbol = generateSymbol();
@@ -256,7 +256,7 @@ tick.add((delta) => {
     }
     for (slot_element in r_col.children) {
       r_col.children[slot_element].position.y =
-        r_col.children[slot_element].position.y - delta * step * 8;
+        r_col.children[slot_element].position.y - step * 24;
       if (r_col.children[slot_element].position.y < sym_origin_up) {
         r_col.removeChild(r_col.children[slot_element]);
         new_symbol = generateSymbol();
@@ -273,8 +273,11 @@ function play() {
   // Mechanism to restore alpha of all symbols
   for (symbol in l_col.children) {
     l_col.children[symbol].alpha = 1;
+    l_col.children[symbol].stop();
     m_col.children[symbol].alpha = 1;
+    m_col.children[symbol].stop();
     r_col.children[symbol].alpha = 1;
+    r_col.children[symbol].stop();
   }
   speed_change = true;
   if (play_mode == true) {
