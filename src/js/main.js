@@ -111,8 +111,8 @@ app.stage.addChild(btn_base);
 
 let start = PIXI.Sprite.from("src/images/ui/play_icon.png");
 start.anchor.set(0.5);
-start.height = btn_base.height/3.5;
-start.width = start.height;
+start.height = btn_base.height/3;
+start.width = start.height*0.944906445;
 start.buttonMode = true;
 start.cursor = 'pointer';
 start.interactive = true;
@@ -135,6 +135,8 @@ let symbol;
 let symbol_height = backdrop.width/3.2;
 let sym_origin_lr = (frame.position.y - frame_height/2) + symbols_offset;
 let sym_origin_m = (symbols.length)*symbol_height + (frame.position.y - frame_height/2) + symbols_offset;
+let sym_origin_up;
+let sym_origin_down;
 let default_positions = []
 
 let rows = [l_row, m_row, r_row];
@@ -159,10 +161,12 @@ for (row in rows) {
         symbol.height = symbol_height;
         symbol.width = symbol.height;
         symbol.anchor.set(0.5)
-        symbol.position.y = (i)*symbol.height + (frame.position.y - frame_height/2) + symbols_offset;
+        symbol.position.y = (i - Math.floor(symbols_duplicate.length/2.5))*symbol.height + (frame.position.y - frame_height/2) + symbols_offset;
         if (!(default_positions.includes(symbol.position.y))) {
             default_positions.push(symbol.position.y)
         }
+        sym_origin_up = default_positions[0];
+        sym_origin_down = default_positions[default_positions.length-1];
         symbol.position.x = (win_width/2) + symbol.width*(row - 1);
         symbol.zIndex = 2
     
@@ -172,6 +176,8 @@ for (row in rows) {
 }
 
 console.log(default_positions)
+console.log(sym_origin_down)
+console.log(sym_origin_up)
 
 function generateSymbol(row_num) {
     let randomInt = Math.floor(Math.random() * symbols.length);
@@ -206,32 +212,31 @@ tick.add((delta) => {
             tick.speed = (2.5 - 2.5*Math.cos(delta_rad*2));
         }
         for (slot_element in l_row.children) {
-            // console.log(step)
             l_row.children[slot_element].position.y = l_row.children[slot_element].position.y - delta*step*8;
-            if (l_row.children[slot_element].position.y < (sym_origin_lr)) {
+            if (l_row.children[slot_element].position.y < (sym_origin_up)) {
                 l_row.removeChild(l_row.children[slot_element]);
                 new_symbol = generateSymbol();
-                new_symbol.position.y = sym_origin_m;
+                new_symbol.position.y = sym_origin_down;
                 new_symbol.position.x = (win_width/2) - new_symbol.width;
                 l_row.addChild(new_symbol)
             } 
         }
         for (slot_element in m_row.children) {
             m_row.children[slot_element].position.y = m_row.children[slot_element].position.y + delta*step*8;
-            if (m_row.children[slot_element].position.y > sym_origin_m) {
+            if (m_row.children[slot_element].position.y > sym_origin_down) {
                 m_row.removeChild(m_row.children[slot_element]);
                 new_symbol = generateSymbol();
-                new_symbol.position.y = sym_origin_lr;
+                new_symbol.position.y = sym_origin_up;
                 new_symbol.position.x = (win_width/2);
                 m_row.addChild(new_symbol)
             }
         }
         for (slot_element in r_row.children) {
             r_row.children[slot_element].position.y = r_row.children[slot_element].position.y - delta*step*8;
-            if (r_row.children[slot_element].position.y < sym_origin_lr) {
+            if (r_row.children[slot_element].position.y < sym_origin_up) {
                 r_row.removeChild(r_row.children[slot_element]);
                 new_symbol = generateSymbol();
-                new_symbol.position.y = sym_origin_m;
+                new_symbol.position.y = sym_origin_down;
                 new_symbol.position.x = (win_width/2) + new_symbol.width;
                 r_row.addChild(new_symbol)        
             }
@@ -241,7 +246,7 @@ tick.add((delta) => {
 
 let play_mode = false;
 function play() {
-    // Mechanism to resotre alpha of all symbols
+    // Mechanism to restore alpha of all symbols
     for (symbol in l_row.children) {
         l_row.children[symbol].alpha = 1;
         m_row.children[symbol].alpha = 1;
@@ -262,40 +267,36 @@ function play() {
 
             // Mechanism to check whether tiles align
             for (symbol in l_row.children) {
-                l_row.children[symbol].position.y = default_positions[parseInt(symbol, 10)]
-                // Middle column requires special attention.
-                // The position_y of every symbol is compared with the values in default_positions
-                // The closest one is chosen
-                let differences = [];
-                for (position_y in default_positions) {
-                    console.log(position_y)
-                    differences.push(Math.abs(m_row.children[symbol].position.y - default_positions[position_y]))
+                for (row in rows) {
+                    // The position_y of every symbol is compared with the values in default_positions
+                    // The closest one is chosen
+                    let differences = [];
+                    for (position_y in default_positions) {
+                        differences.push(Math.abs(rows[row].children[symbol].position.y - default_positions[position_y]))
+                    }
+                    let min_value = Math.min(...differences)
+                    index_min = differences.indexOf(min_value)
+                    rows[row].children[symbol].position.y = default_positions[index_min]
                 }
-                console.log(differences)
-                let min_value = Math.min(...differences)
-                index_min = differences.indexOf(min_value)
-                console.log(index_min)
-                m_row.children[symbol].position.y = default_positions[index_min]
-                r_row.children[symbol].position.y = default_positions[parseInt(symbol, 10)]
             }
 
             // Mechanism to check which symbols "win"
             for (symbol in l_row.children) {
-                if (l_row.children[symbol].position.y == default_positions[2]) {
+                if (l_row.children[symbol].position.y == default_positions[Math.floor(symbols.length/2)]) {
                     l_row.children[symbol].play()
                     l_row.children[symbol].animationSpeed = 0.05;
                 } else {
                     l_row.children[symbol].alpha = 0.5;
                 }
                 
-                if (m_row.children[symbol].position.y == default_positions[2]) {
+                if (m_row.children[symbol].position.y == default_positions[Math.floor(symbols.length/2)]) {
                     m_row.children[symbol].play()
                     m_row.children[symbol].animationSpeed = 0.05;
                 } else {
                     m_row.children[symbol].alpha = 0.5;
                 }
 
-                if (r_row.children[symbol].position.y == default_positions[2]) {
+                if (r_row.children[symbol].position.y == default_positions[Math.floor(symbols.length/2)]) {
                     r_row.children[symbol].play()
                     r_row.children[symbol].animationSpeed = 0.05;
                 }
