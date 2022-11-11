@@ -16,9 +16,6 @@ let app = new PIXI.Application({
 });
 document.getElementById('root').appendChild(app.view);
 
-let bg = PIXI.Sprite.from('src/images/bg.png');
-// bg.width = win_width;
-
 let bg_width;
 let tb_width;
 let bb_width;
@@ -48,6 +45,8 @@ if (mobile_mode) {
   crow_y = win_height / 2;
   symbols_offset = frame_width / 1.3 / 3.2 / 4; //symbol_height/4
 }
+
+let bg = PIXI.Sprite.from('src/images/bg.png');
 bg.width = bg_width;
 bg.height = bg.width;
 bg.anchor.set(0.5);
@@ -89,7 +88,6 @@ logo.zIndex = 3;
 
 let backdrop = PIXI.Sprite.from('src/images/ui/backdrop.png');
 backdrop.anchor.set(0.5);
-// backdrop.scale.set(1.1)
 backdrop.width = frame.width / 1.3;
 backdrop.height = frame.height / 1.5;
 backdrop.position.set(win_width / 2, frame.position.y);
@@ -227,11 +225,6 @@ let delta_num = 0;
 let step = symbol_height / 180; //Step is 1/180th of the height of an individual symbol
 tick.add((delta) => {
   if (move_mode) {
-    if (speed_change) {
-      delta_num = delta_num + 2;
-      delta_rad = delta_num * (Math.PI / 180);
-      tick.speed = 2.5 - 2.5 * Math.cos(delta_rad * 2);
-    }
     for (slot_element in l_col.children) {
       l_col.children[slot_element].position.y =
         l_col.children[slot_element].position.y - step * 24;
